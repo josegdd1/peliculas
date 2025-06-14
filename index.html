@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calificación de Películas</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }body {
+  font-family: system-ui, sans-serif;
+  background-color: #000;
+  color: #fff;
+  margin: 0;
+  padding: 16px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 1.8em;
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #1a001f;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.05);
+}
+
+input, button {
+  padding: 14px;
+  font-size: 1em;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background-color: #220033;
+  color: white;
+}
+
+input::placeholder {
+  color: #aaa;
+}
+
+button {
+  background-color: #9b59b6;
+  border: none;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #8e44ad;
+}
+
+#listaPeliculas {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pelicula {
+  background: #1a001f;
+  padding: 16px;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 0 8px rgba(255, 0, 255, 0.05);
+}
+
+.pelicula span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1em;
+}
+
+.pelicula span[contenteditable="true"] {
+  outline: none;
+  border-bottom: 1px dashed #555;
+  padding-bottom: 2px;
+}
+
+.eliminar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0;
+}
+
+.eliminar:hover {
+  color: #e74c3c;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+
+  form {
+    padding: 12px;
+  }
+
+  .pelicula {
+    padding: 12px;
+  }
+
+  input, button {
+    font-size: 1em;
+  }
+}
+
+  </style>
+</head>
+<body>  <h1>Calificación de Películas</h1>  <form id="formulario">
+    <input type="text" id="nombre" placeholder="Nombre de la película" required>
+    <input type="number" id="nota" placeholder="Nota (1-10)" min="1" max="10" required>
+    <button type="submit">Agregar</button>
+  </form>  <div id="listaPeliculas"></div>  <script>
+    const form = document.getElementById('formulario');
+    const lista = document.getElementById('listaPeliculas');
+
+    window.onload = () => {
+      const peliculas = obtenerPeliculas();
+      peliculas.forEach((p, i) => mostrarPelicula(p, i));
+    };
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      const nota = document.getElementById('nota').value.trim();
+      const fecha = new Date().toLocaleDateString();
+
+      if (nombre && nota) {
+        const nueva = { nombre, nota, fecha };
+        const peliculas = obtenerPeliculas();
+        peliculas.push(nueva);
+        localStorage.setItem('peliculas', JSON.stringify(peliculas));
+        recargar();
+        form.reset();
+      }
+    });
+
+    function obtenerPeliculas() {
+      return JSON.parse(localStorage.getItem('peliculas')) || [];
+    }
+
+    function mostrarPelicula(pelicula, index) {
+      const div = document.createElement('div');
+      div.classList.add('pelicula');
+      div.innerHTML = `
+        <button class="eliminar" onclick="borrar(${index})">×</button>
+        <span><strong>Película:</strong> <span contenteditable="true" oninput="actualizar(${index}, 'nombre', this.innerText)">${pelicula.nombre}</span></span>
+        <span><strong>Nota:</strong> <span contenteditable="true" oninput="actualizar(${index}, 'nota', this.innerText)">${pelicula.nota}</span></span>
+        <span><strong>Fecha:</strong> ${pelicula.fecha}</span>
+      `;
+      lista.appendChild(div);
+    }
+
+    function actualizar(index, campo, valor) {
+      const peliculas = obtenerPeliculas();
+      peliculas[index][campo] = valor.trim();
+      localStorage.setItem('peliculas', JSON.stringify(peliculas));
+    }
+
+    function borrar(index) {
+      const peliculas = obtenerPeliculas();
+      peliculas.splice(index, 1);
+      localStorage.setItem('peliculas', JSON.stringify(peliculas));
+      recargar();
+    }
+
+    function recargar() {
+      lista.innerHTML = "";
+      const peliculas = obtenerPeliculas();
+      peliculas.forEach((p, i) => mostrarPelicula(p, i));
+    }
+  </script></body>
+</html>
